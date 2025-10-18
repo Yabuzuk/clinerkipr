@@ -160,9 +160,13 @@
 
         // Обработка отправки формы
         function submitForm() {
+            console.log('Функция submitForm вызвана');
+            
             const form = document.getElementById('bookingForm');
             const formData = new FormData(form);
             const data = Object.fromEntries(formData);
+            
+            console.log('Данные формы:', data);
             
             // Проверка обязательных полей
             if (!data.name || !data.phone || !data.date || !data.time || !data.service || !data.address) {
@@ -172,15 +176,17 @@
             
             // Отправка данных
             if (window.Telegram && window.Telegram.WebApp) {
+                console.log('Отправка через Telegram WebApp');
                 window.Telegram.WebApp.sendData(JSON.stringify(data));
             } else {
-                console.log('Данные записи:', data);
+                console.log('Отправка в обычном браузере');
                 alert('Спасибо! Ваша заявка принята.');
                 form.reset();
             }
         }
         
         document.getElementById('bookingForm').addEventListener('submit', function(e) {
+            console.log('Событие submit формы');
             e.preventDefault();
             submitForm();
         });
@@ -215,6 +221,7 @@
                 
                 // Обработчик главной кнопки
                 tg.MainButton.onClick(() => {
+                    console.log('Нажата главная кнопка Telegram');
                     submitForm();
                 });
             }
