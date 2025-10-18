@@ -159,29 +159,37 @@
         }
 
         // Обработка отправки формы
+        let isSubmitting = false;
+        
         function submitForm() {
-            console.log('Функция submitForm вызвана');
+            if (isSubmitting) {
+                console.log('Отправка уже в процессе');
+                return;
+            }
+            
+            isSubmitting = true;
+            console.log('Начало отправки формы');
             
             const form = document.getElementById('bookingForm');
             const formData = new FormData(form);
             const data = Object.fromEntries(formData);
             
-            console.log('Данные формы:', data);
-            
             // Проверка обязательных полей
             if (!data.name || !data.phone || !data.date || !data.time || !data.service || !data.address) {
                 alert('Пожалуйста, заполните все обязательные поля');
+                isSubmitting = false;
                 return;
             }
             
             // Отправка данных
             if (window.Telegram && window.Telegram.WebApp) {
-                console.log('Отправка через Telegram WebApp');
+                console.log('Отправка через Telegram WebApp:', data);
                 window.Telegram.WebApp.sendData(JSON.stringify(data));
             } else {
-                console.log('Отправка в обычном браузере');
+                console.log('Отправка в обычном браузере:', data);
                 alert('Спасибо! Ваша заявка принята.');
                 form.reset();
+                isSubmitting = false;
             }
         }
         
