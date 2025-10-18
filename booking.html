@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Онлайн запись - Клининговая компания</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .time-slot {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+        
+        .time-slot:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        
+        .time-slot.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .time-slot.unavailable {
+            background: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Онлайн запись на клининг</h1>
+        
+        <form id="bookingForm">
+            <div class="form-group">
+                <label for="name">Имя *</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="phone">Телефон *</label>
+                <input type="tel" id="phone" name="phone" required>
+            </div>
+            
+
+            
+            <div class="form-group">
+                <label for="date">Дата *</label>
+                <input type="date" id="date" name="date" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Время *</label>
+                <div class="time-slots" id="timeSlots"></div>
+                <input type="hidden" id="selectedTime" name="time" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="service">Тип услуги *</label>
+                <select id="service" name="service" required>
+                    <option value="">Выберите услугу</option>
+                    <option value="general">Генеральная уборка</option>
+                    <option value="regular">Регулярная уборка</option>
+                    <option value="office">Уборка офиса</option>
+                    <option value="windows">Мытье окон</option>
+                    <option value="carpet">Чистка ковров</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="area">Площадь (м²)</label>
+                <input type="number" id="area" name="area" min="1">
+            </div>
+            
+            <div class="form-group">
+                <label for="address">Адрес *</label>
+                <textarea id="address" name="address" rows="3" required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="notes">Дополнительные пожелания</label>
+                <textarea id="notes" name="notes" rows="3"></textarea>
+            </div>
+            
+            <button type="submit" class="submit-btn">Записаться</button>
+        </form>
+    </div>
+
+    <script>
+        // Генерация временных слотов с интервалом 30 минут
+        function generateTimeSlots() {
+            const slots = [];
+            for (let hour = 8; hour <= 20; hour++) {
+                for (let minute = 0; minute < 60; minute += 30) {
+                    const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                    slots.push(timeString);
+                }
+            }
+            return slots;
+        }
+
+        // Отображение временных слотов
+        function displayTimeSlots() {
+            const timeSlotsContainer = document.getElementById('timeSlots');
+            const slots = generateTimeSlots();
+            
+            timeSlotsContainer.innerHTML = '';
+            
+            slots.forEach(time => {
+                const slotDiv = document.createElement('div');
+                slotDiv.className = 'time-slot';
+                slotDiv.textContent = time;
+                slotDiv.onclick = () => selectTimeSlot(slotDiv, time);
+                
+                // Случайно делаем некоторые слоты недоступными для демонстрации
+                if (Math.random() < 0.2) {
+                    slotDiv.classList.add('unavailable');
+                    slotDiv.onclick = null;
+                }
+                
+                timeSlotsContainer.appendChild(slotDiv);
+            });
+        }
+
+        // Выбор временного слота
+        function selectTimeSlot(element, time) {
+            if (element.classList.contains('unavailable')) return;
+            
+            // Убираем выделение с других слотов
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.remove('selected');
+            });
+            
+            // Выделяем выбранный слот
+            element.classList.add('selected');
+            document.getElementById('selectedTime').value = time;
+        }
+
+        // Установка минимальной даты (сегодня)
+        function setMinDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').min = today;
+        }
+
+        // Обработка отправки формы
+        document.getElementById('bookingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            if (!data.time) {
+                alert('Пожалуйста, выберите время');
+                return;
+            }
+            
+            // Отправка данных
+            if (window.Telegram && window.Telegram.WebApp) {
+                // Отправляем данные обратно в бот
+                window.Telegram.WebApp.sendData(JSON.stringify(data));
+                window.Telegram.WebApp.close();
+            } else {
+                // Обычная обработка для браузера
+                console.log('Данные записи:', data);
+                alert('Спасибо! Ваша заявка принята. Мы свяжемся с вами для подтверждения.');
+                
+                // Очистка формы
+                this.reset();
+                document.querySelectorAll('.time-slot').forEach(slot => {
+                    slot.classList.remove('selected');
+                });
+            }
+        });
+
+        // Инициализация Telegram Web App
+        function initTelegramWebApp() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                const tg = window.Telegram.WebApp;
+                tg.ready();
+                
+                // Получаем данные пользователя из Telegram
+                const user = tg.initDataUnsafe?.user;
+                if (user) {
+                    // Заполняем имя
+                    const nameField = document.getElementById('name');
+                    const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ');
+                    if (fullName) {
+                        nameField.value = fullName;
+                    }
+                    
+                    // Заполняем телефон если доступен
+                    if (user.phone_number) {
+                        document.getElementById('phone').value = '+' + user.phone_number;
+                    }
+                    
+
+                }
+                
+                // Настраиваем главную кнопку Telegram
+                tg.MainButton.text = 'Записаться';
+                tg.MainButton.show();
+                
+                // Обработчик главной кнопки
+                tg.MainButton.onClick(() => {
+                    document.getElementById('bookingForm').dispatchEvent(new Event('submit'));
+                });
+            }
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            setMinDate();
+            displayTimeSlots();
+            initTelegramWebApp();
+        });
+    </script>
+</body>
+</html>
