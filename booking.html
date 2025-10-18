@@ -59,39 +59,7 @@
             border-color: #667eea;
         }
         
-        .time-slots {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .time-slot {
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: white;
-        }
-        
-        .time-slot:hover {
-            border-color: #667eea;
-            background: #f0f4ff;
-        }
-        
-        .time-slot.selected {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-        
-        .time-slot.unavailable {
-            background: #f5f5f5;
-            color: #999;
-            cursor: not-allowed;
-        }
+
         
         .submit-btn {
             width: 100%;
@@ -140,9 +108,8 @@
             </div>
             
             <div class="form-group">
-                <label>Время *</label>
-                <div class="time-slots" id="timeSlots"></div>
-                <input type="hidden" id="selectedTime" name="time" required>
+                <label for="time">Время *</label>
+                <input type="time" id="time" name="time" required>
             </div>
             
             <div class="form-group">
@@ -177,53 +144,12 @@
     </div>
 
     <script>
-        // Генерация временных слотов с интервалом 30 минут
-        function generateTimeSlots() {
-            const slots = [];
-            for (let hour = 8; hour <= 20; hour++) {
-                for (let minute = 0; minute < 60; minute += 30) {
-                    const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-                    slots.push(timeString);
-                }
-            }
-            return slots;
-        }
-
-        // Отображение временных слотов
-        function displayTimeSlots() {
-            const timeSlotsContainer = document.getElementById('timeSlots');
-            const slots = generateTimeSlots();
-            
-            timeSlotsContainer.innerHTML = '';
-            
-            slots.forEach(time => {
-                const slotDiv = document.createElement('div');
-                slotDiv.className = 'time-slot';
-                slotDiv.textContent = time;
-                slotDiv.onclick = () => selectTimeSlot(slotDiv, time);
-                
-                // Случайно делаем некоторые слоты недоступными для демонстрации
-                if (Math.random() < 0.2) {
-                    slotDiv.classList.add('unavailable');
-                    slotDiv.onclick = null;
-                }
-                
-                timeSlotsContainer.appendChild(slotDiv);
-            });
-        }
-
-        // Выбор временного слота
-        function selectTimeSlot(element, time) {
-            if (element.classList.contains('unavailable')) return;
-            
-            // Убираем выделение с других слотов
-            document.querySelectorAll('.time-slot').forEach(slot => {
-                slot.classList.remove('selected');
-            });
-            
-            // Выделяем выбранный слот
-            element.classList.add('selected');
-            document.getElementById('selectedTime').value = time;
+        // Настройка времени с интервалом 30 минут
+        function setupTimeInput() {
+            const timeInput = document.getElementById('time');
+            timeInput.step = 1800; // 30 минут в секундах
+            timeInput.min = '08:00';
+            timeInput.max = '20:30';
         }
 
         // Установка минимальной даты (сегодня)
@@ -300,7 +226,7 @@
         // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
             setMinDate();
-            displayTimeSlots();
+            setupTimeInput();
             initTelegramWebApp();
         });
     </script>
