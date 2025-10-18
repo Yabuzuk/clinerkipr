@@ -4,15 +4,37 @@ import json
 from datetime import datetime
 
 # Замените на ваш токен бота
-BOT_TOKEN = "YOUR_BOT_TOKEN"
+BOT_TOKEN = "6644637602:AAEVKKrYraoHa9Wm1augxMrWYSK8I8K-HEw"
 # URL вашей страницы записи
-BOOKING_URL = "https://yourdomain.com/booking.html"
+BOOKING_URL = "https://yabuzuk.github.io/clinerkipr/booking.html"
 # ID канала для сохранения заявок (создайте приватный канал)
-BOOKINGS_CHANNEL = "@your_bookings_channel"
+BOOKINGS_CHANNEL = "-1003161238645"
 # ID администратора
-ADMIN_ID = "YOUR_ADMIN_ID"
+ADMIN_ID = "407457753"
 
 bot = telebot.TeleBot(BOT_TOKEN)
+
+@bot.message_handler(commands=['myid'])
+def get_my_id(message):
+    bot.send_message(
+        message.chat.id,
+        f"Ваш Telegram ID: {message.from_user.id}"
+    )
+
+@bot.message_handler(commands=['test_channel'])
+def test_channel(message):
+    try:
+        bot.send_message(BOOKINGS_CHANNEL, "🧪 Тест канала - бот работает!")
+        bot.send_message(message.chat.id, "✅ Канал работает!")
+    except Exception as e:
+        bot.send_message(message.chat.id, f"❌ Ошибка канала: {e}")
+
+@bot.message_handler(commands=['get_chat_id'])
+def get_chat_id(message):
+    bot.send_message(
+        message.chat.id,
+        f"ID этого чата: {message.chat.id}"
+    )
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
@@ -130,5 +152,7 @@ def update_booking_status(message):
         )
 
 if __name__ == "__main__":
+    # Удаляем webhook если он активен
+    bot.remove_webhook()
     print("Бот запущен...")
     bot.polling(none_stop=True)
