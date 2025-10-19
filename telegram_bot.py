@@ -58,7 +58,10 @@ def start_message(message):
 
 @bot.message_handler(content_types=['web_app_data'])
 def handle_booking_data(message):
+    print(f"Получены данные от пользователя {message.from_user.id}")
+    print(f"Сырые данные: {message.web_app_data.data}")
     data = json.loads(message.web_app_data.data)
+    print(f"Обработанные данные: {data}")
     
     # Генерируем ID заявки
     booking_id = f"B{datetime.now().strftime('%Y%m%d%H%M%S')}"
