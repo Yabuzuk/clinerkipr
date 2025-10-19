@@ -41,6 +41,45 @@ def ping(message):
     bot.send_message(message.chat.id, "🏓 Понг! Бот работает")
     print(f"Ping от пользователя {message.from_user.id}")
 
+@bot.message_handler(commands=['test_send'])
+def test_send(message):
+    if str(message.from_user.id) != ADMIN_ID:
+        return
+    
+    test_data = {
+        'name': 'Тест',
+        'phone': '89999999999',
+        'date': '2025-10-20',
+        'time': '10:00',
+        'service': 'general',
+        'area': '50',
+        'address': 'Тестовый адрес',
+        'notes': 'Тест'
+    }
+    
+    booking_id = f"TEST{datetime.now().strftime('%H%M%S')}"
+    
+    channel_message = f"""
+🆔 #{booking_id}
+👤 {test_data['name']}
+📞 {test_data['phone']}
+📅 {test_data['date']} {test_data['time']}
+🧹 {test_data['service']}
+📐 {test_data['area']} м²
+📍 {test_data['address']}
+📝 {test_data['notes']}
+⏰ {datetime.now().strftime('%d.%m.%Y %H:%M')}
+🔄 Тест
+"""
+    
+    try:
+        result = bot.send_message(BOOKINGS_CHANNEL, channel_message)
+        bot.send_message(message.chat.id, f"✅ Тест успешен! ID: {result.message_id}")
+        print(f"Тестовое сообщение отправлено в канал")
+    except Exception as e:
+        bot.send_message(message.chat.id, f"❌ Ошибка: {e}")
+        print(f"Ошибка отправки в канал: {e}")
+
 @bot.message_handler(commands=['start'])
 def start_message(message):
     markup = types.InlineKeyboardMarkup()
@@ -64,8 +103,9 @@ def start_message(message):
 @bot.message_handler(func=lambda message: True)
 def debug_all_messages(message):
     print(f"Получено сообщение: {message.content_type} от {message.from_user.id}")
-    if hasattr(message, 'web_app_data'):
+    if hasattr(message, 'web_app_data') and message.web_app_data:
         print(f"Web App Data: {message.web_app_data.data}")
+    # Пропускаем обработку дальше
 
 @bot.message_handler(content_types=['web_app_data'])
 def handle_booking_data(message):
