@@ -235,10 +235,8 @@
                     }
                 });
                 
-                // Скрываем обычную кнопку в Telegram (только если это Telegram)
-                if (tg.platform !== 'unknown') {
-                    document.querySelector('.submit-btn').style.display = 'none';
-                }
+                // Оставляем обе кнопки для надежности
+                console.log('Обе кнопки активны');
             }
         }
 

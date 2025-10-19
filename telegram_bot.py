@@ -36,6 +36,11 @@ def get_chat_id(message):
         f"ID этого чата: {message.chat.id}"
     )
 
+@bot.message_handler(commands=['ping'])
+def ping(message):
+    bot.send_message(message.chat.id, "🏓 Понг! Бот работает")
+    print(f"Ping от пользователя {message.from_user.id}")
+
 @bot.message_handler(commands=['start'])
 def start_message(message):
     markup = types.InlineKeyboardMarkup()
