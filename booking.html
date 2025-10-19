@@ -235,8 +235,10 @@
                     }
                 });
                 
-                // Скрываем обычную кнопку в Telegram
-                document.querySelector('.submit-btn').style.display = 'none';
+                // Скрываем обычную кнопку в Telegram (только если это Telegram)
+                if (tg.platform !== 'unknown') {
+                    document.querySelector('.submit-btn').style.display = 'none';
+                }
             }
         }
 
@@ -244,7 +246,13 @@
         document.addEventListener('DOMContentLoaded', function() {
             setMinDate();
             setupTimeInput();
-            initTelegramWebApp();
+            
+            // Проверяем есть ли Telegram WebApp
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) {
+                initTelegramWebApp();
+            } else {
+                console.log('Обычный браузер - оставляем кнопку');
+            }
         });
     </script>
 </body>

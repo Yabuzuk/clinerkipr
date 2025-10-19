@@ -56,9 +56,16 @@ def start_message(message):
         reply_markup=markup
     )
 
+@bot.message_handler(func=lambda message: True)
+def debug_all_messages(message):
+    print(f"Получено сообщение: {message.content_type} от {message.from_user.id}")
+    if hasattr(message, 'web_app_data'):
+        print(f"Web App Data: {message.web_app_data.data}")
+
 @bot.message_handler(content_types=['web_app_data'])
 def handle_booking_data(message):
-    print(f"Получены данные от пользователя {message.from_user.id}")
+    print(f"=== ПОЛУЧЕНЫ ДАННЫЕ WEB APP ===")
+    print(f"Пользователь: {message.from_user.id}")
     print(f"Сырые данные: {message.web_app_data.data}")
     data = json.loads(message.web_app_data.data)
     print(f"Обработанные данные: {data}")
@@ -81,17 +88,25 @@ def handle_booking_data(message):
 """
     
     # Сохраняем в канал
+    print(f"Попытка отправить в канал: {BOOKINGS_CHANNEL}")
     try:
-        bot.send_message(BOOKINGS_CHANNEL, channel_message)
+        result = bot.send_message(BOOKINGS_CHANNEL, channel_message)
+        print(f"Успешно отправлено в канал: {result.message_id}")
     except Exception as e:
-        print(f"Ошибка сохранения в канал: {e}")
+        print(f"ОШИБКА отправки в канал: {e}")
     
     # Отправляем подтверждение клиенту
-    bot.send_message(
-        message.chat.id,
-        f"✅ Заявка #{booking_id} принята!\n"
-        "Мы свяжемся с вами для подтверждения."
-    )
+    try:
+        bot.send_message(
+            message.chat.id,
+            f"✅ Заявка #{booking_id} принята!\n"
+            "Мы свяжемся с вами для подтверждения."
+        )
+        print(f"Подтверждение отправлено клиенту")
+    except Exception as e:
+        print(f"Ошибка отправки клиенту: {e}")
+    
+    print("=== ОБРАБОТКА ЗАВЕРШЕНА ===")
 
 @bot.message_handler(commands=['admin'])
 def admin_panel(message):
